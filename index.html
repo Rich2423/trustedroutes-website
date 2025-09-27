@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrustedRoutes - Smart Route Analytics</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .navbar {
+            background: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            height: 70px;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+            height: 100%;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2a5298;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #2a5298, #1e3c72);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-item {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-item:hover {
+            background: #f8f9fa;
+            color: #2a5298;
+        }
+
+        .nav-item.active {
+            background: #2a5298;
+            color: white;
+        }
+
+        .main-content {
+            margin-top: 70px;
+            min-height: calc(100vh - 70px);
+        }
+
+        .page {
+            display: none;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f8f9fa;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #2a5298, #1e3c72);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #2a5298;
+            box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.1);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2a5298, #1e3c72);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-large {
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            width: 100%;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            border-left: 4px solid #2a5298;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2a5298;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .profit-positive { color: #38ef7d; }
+        .profit-negative { color: #ff9a56; }
+
+        .recommendation {
+            background: linear-gradient(135deg, #e8f5e8, #f0f8f0);
+            border-left: 4px solid #38ef7d;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 2rem;
+        }
+
+        .recommendation.warning {
+            background: linear-gradient(135deg, #fff3cd, #fef7e3);
+            border-left-color: #ff9a56;
+        }
+
+        .recommendation-header {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        @media (max-width: 768px) {
+            .nav-menu { display: none; }
+            .form-grid { grid-template-columns: 1fr; }
+            .main-content { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon">🚛</div>
+                TrustedRoutes
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item active" onclick="goToPage('dashboard')">Dashboard</li>
+                <li class="nav-item" onclick="goToPage('analyzer')">Route Analyzer</li>
+                <li class="nav-item" onclick="goToPage('history')">Load History</li>
+                <li class="nav-item" onclick="goToPage('settings')">Settings</li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div id="dashboard" class="page active">
+            <h1>Dashboard</h1>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="weeklyProfit">$0</div>
+                    <div class="stat-label">Total Profit This Week</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="routesAnalyzed">0</div>
+                    <div class="stat-label">Routes Analyzed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="avgProfit">$0</div>
+                    <div class="stat-label">Avg Profit Per Route</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="profitablePercent">0%</div>
+                    <div class="stat-label">Profitable Routes</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Recent Route Analysis</h2>
+                    <button class="btn btn-primary" onclick="goToPage('analyzer')">Analyze New Route</button>
+                </div>
+                <div id="recentRoutesTable">
+                    <p>No routes analyzed yet. Click "Analyze New Route" to get started!</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="analyzer" class="page">
+            <h1>Route Analyzer</h1>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Load Information</h2>
+                </div>
+                
+                <div class="form-grid">
+                    <div>
+                        <div class="form-group">
+                            <label class="form-label">Current Location</label>
+                            <input type="text" class="form-input" id="currentLocation" placeholder="Dallas, TX">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Pickup Location</label>
+                            <input type="text" class="form-input" id="pickupLocation" placeholder="Houston, TX">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Delivery Location</label>
+                            <input type="text" class="form-input" id="deliveryLocation" placeholder="Phoenix, AZ">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="form-group">
+                            <label class="form-label">Load Rate ($/mile)</label>
+                            <input type="number" class="form-input" id="loadRate" placeholder="2.80" step="0.01">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Load Weight (lbs)</label>
+                            <input type="number" class="form-input" id="loadWeight" placeholder="45000" value="45000">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Load Type</label>
+                            <select class="form-select" id="loadType">
+                                <option value="dry_van">Dry Van</option>
+                                <option value="reefer">Reefer</option>
+                                <option value="flatbed">Flatbed</option>
+                                <option value="step_deck">Step Deck</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary btn-large" onclick="runAnalysis()">
+                    Analyze Route Profitability
+                </button>
+
+                <div id="analysisResults" style="display: none;">
+                    <div class="results-grid">
+                        <div class="result-card">
+                            <div class="result-value" id="totalMiles">0</div>
+                            <div class="result-label">Total Miles</div>
+                        </div>
+                        <div class="result-card">
+                            <div class="result-value" id="deadheadMiles">0</div>
+                            <div class="result-label">Deadhead Miles</div>
+                        </div>
+                        <div class="result-card">
+                            <div class="result-value" id="fuelCost">$0</div>
+                            <div class="result-label">Estimated Fuel Cost</div>
+                        </div>
+                        <div class="result-card">
+                            <div class="result-value" id="netProfit">$0</div>
+                            <div class="result-label">Net Profit</div>
+                        </div>
+                        <div class="result-card">
+                            <div class="result-value" id="profitPerMile">$0</div>
+                            <div class="result-label">Profit Per Mile</div>
+                        </div>
+                        <div class="result-card">
+                            <div class="result-value" id="negotiationPotential">$0</div>
+                            <div class="result-label">Negotiation Potential</div>
+                        </div>
+                    </div>
+
+                    <div id="recommendation" class="recommendation">
+                        <div class="recommendation-header" id="recommendationHeader">
+                            Route Analysis Complete
+                        </div>
+                        <div id="recommendationDetails">
+                            Analysis details will appear here.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="history" class="page">
+            <h1>Load History</h1>
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Analyzed Routes</h2>
+                </div>
+                <div id="historyContent">
+                    <p>No routes in history yet.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="settings" class="page">
+            <h1>Settings</h1>
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Truck Configuration</h2>
+                </div>
+                <div class="form-grid">
+                    <div>
+                        <div class="form-group">
+                            <label class="form-label">Truck MPG</label>
+                            <input type="number" class="form-input" id="truckMpg" value="6.5" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Operating Cost ($/mile)</label>
+                            <input type="number" class="form-input" id="operatingCost" value="1.85" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Driver Pay Rate ($/mile)</label>
+                            <input type="number" class="form-input" id="driverPay" value="0.55" step="0.01">
+                        </div>
+                    </div>
+                    <div>
+                        <div class="form-group">
+                            <label class="form-label">Home Base</label>
+                            <input type="text" class="form-input" id="homeBase" placeholder="Dallas, TX">
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="saveConfig()">Save Settings</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        var appData = {
+            settings: {
+                truckMpg: 6.5,
+                operatingCost: 1.85,
+                driverPay: 0.55,
+                homeBase: 'Dallas, TX'
+            },
+            routes: []
+        };
+
+        function goToPage(pageId) {
+            console.log('Navigating to:', pageId);
+            
+            var allPages = document.querySelectorAll('.page');
+            var allNavs = document.querySelectorAll('.nav-item');
+            
+            for (var i = 0; i < allPages.length; i++) {
+                allPages[i].classList.remove('active');
+            }
+            
+            for (var i = 0; i < allNavs.length; i++) {
+                allNavs[i].classList.remove('active');
+            }
+            
+            var targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+                console.log('Successfully switched to:', pageId);
+            }
+            
+            var pageNames = ['dashboard', 'analyzer', 'history', 'settings'];
+            var pageIndex = pageNames.indexOf(pageId);
+            if (pageIndex >= 0 && allNavs[pageIndex]) {
+                allNavs[pageIndex].classList.add('active');
+            }
+        }
+
+        function getDistance(from, to) {
+            var knownRoutes = {
+                'dallas_houston': 240,
+                'houston_phoenix': 1180,
+                'houston_dallas': 240,
+                'phoenix_houston': 1180,
+                'atlanta_miami': 662,
+                'miami_atlanta': 662,
+                'losangeles_atlanta': 2170,
+                'atlanta_losangeles': 2170
+            };
+            
+            var fromKey = from.toLowerCase().replace(/[^a-z]/g, '').substring(0, 8);
+            var toKey = to.toLowerCase().replace(/[^a-z]/g, '').substring(0, 8);
+            var routeKey = fromKey + '_' + toKey;
+            
+            return knownRoutes[routeKey] || (Math.floor(Math.random() * 800) + 300);
+        }
+
+        function getFuelPrice(location) {
+            var statePrices = {
+                'texas': 3.55, 'tx': 3.55,
+                'california': 4.65, 'ca': 4.65,
+                'arizona': 3.95, 'az': 3.95,
+                'florida': 3.65, 'fl': 3.65,
+                'georgia': 3.55, 'ga': 3.55,
+                'illinois': 3.85, 'il': 3.85
+            };
+            
+            var locationLower = location.toLowerCase();
+            for (var state in statePrices) {
+                if (locationLower.includes(state)) {
+                    return statePrices[state] + (Math.random() * 0.2 - 0.1);
+                }
+            }
+            return 3.75;
+        }
+
+        function runAnalysis() {
+            console.log('Starting route analysis');
+            
+            var current = document.getElementById('currentLocation').value.trim();
+            var pickup = document.getElementById('pickupLocation').value.trim();
+            var delivery = document.getElementById('deliveryLocation').value.trim();
+            var rate = document.getElementById('loadRate').value;
+            
+            if (!current || !pickup || !delivery || !rate) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            var analyzeBtn = document.querySelector('.btn-large');
+            analyzeBtn.textContent = 'Analyzing...';
+            analyzeBtn.disabled = true;
+            
+            setTimeout(function() {
+                try {
+                    var rateNum = parseFloat(rate);
+                    var deadhead = getDistance(current, pickup);
+                    var loaded = getDistance(pickup, delivery);
+                    var totalMiles = deadhead + loaded;
+                    
+                    var fuelPrice = getFuelPrice(pickup);
+                    var fuelCost = (totalMiles / appData.settings.truckMpg) * fuelPrice;
+                    var opsCost = totalMiles * appData.settings.operatingCost;
+                    var driverCost = totalMiles * appData.settings.driverPay;
+                    var revenue = loaded * rateNum;
+                    var profit = revenue - fuelCost - opsCost - driverCost;
+                    var profitPerMile = profit / totalMiles;
+                    
+                    console.log('Analysis complete:', {
+                        totalMiles: totalMiles,
+                        profit: profit,
+                        profitPerMile: profitPerMile
+                    });
+                    
+                    document.getElementById('totalMiles').textContent = totalMiles.toLocaleString();
+                    document.getElementById('deadheadMiles').textContent = deadhead.toLocaleString();
+                    document.getElementById('fuelCost').textContent = '$' + Math.round(fuelCost).toLocaleString();
+                    document.getElementById('netProfit').textContent = '$' + Math.round(profit).toLocaleString();
+                    document.getElementById('profitPerMile').textContent = '$' + profitPerMile.toFixed(2);
+                    document.getElementById('negotiationPotential').textContent = '+$' + Math.round(Math.random() * 400 + 100);
+                    
+                    var profitEl = document.getElementById('netProfit');
+                    profitEl.className = profit >= 0 ? 'result-value profit-positive' : 'result-value profit-negative';
+                    
+                    var recHeader = document.getElementById('recommendationHeader');
+                    var recDetails = document.getElementById('recommendationDetails');
+                    var recDiv = document.getElementById('recommendation');
+                    
+                    if (profit >= 500) {
+                        recDiv.className = 'recommendation';
+                        recHeader.textContent = 'HIGHLY RECOMMENDED';
+                        recDetails.innerHTML = 'Excellent profit of $' + profitPerMile.toFixed(2) + '/mile. Strong route with good margins.';
+                    } else if (profit >= 200) {
+                        recDiv.className = 'recommendation';
+                        recHeader.textContent = 'RECOMMENDED';
+                        recDetails.innerHTML = 'Acceptable profit of $' + profitPerMile.toFixed(2) + '/mile. Meets minimum requirements.';
+                    } else {
+                        recDiv.className = 'recommendation warning';
+                        recHeader.textContent = 'NOT RECOMMENDED';
+                        recDetails.innerHTML = 'Low profit of $' + profitPerMile.toFixed(2) + '/mile. Consider other opportunities.';
+                    }
+                    
+                    appData.routes.unshift({
+                        date: new Date().toLocaleDateString(),
+                        route: pickup + ' → ' + delivery,
+                        miles: totalMiles,
+                        rate: rateNum,
+                        profit: profit
+                    });
+                    
+                    updateStats();
+                    document.getElementById('analysisResults').style.display = 'block';
+                    
+                } catch (error) {
+                    console.error('Analysis error:', error);
+                    alert('Error during analysis');
+                } finally {
+                    analyzeBtn.textContent = 'Analyze Route Profitability';
+                    analyzeBtn.disabled = false;
+                }
+            }, 1000);
+        }
+
+        function updateStats() {
+            var totalProfit = 0;
+            var profitable = 0;
+            
+            for (var i = 0; i < appData.routes.length; i++) {
+                totalProfit += appData.routes[i].profit;
+                if (appData.routes[i].profit > 0) profitable++;
+            }
+            
+            document.getElementById('weeklyProfit').textContent = '$' + Math.round(totalProfit).toLocaleString();
+            document.getElementById('routesAnalyzed').textContent = appData.routes.length;
+            document.getElementById('avgProfit').textContent = appData.routes.length > 0 ? 
+                '$' + Math.round(totalProfit / appData.routes.length) : '$0';
+            document.getElementById('profitablePercent').textContent = appData.routes.length > 0 ? 
+                Math.round((profitable / appData.routes.length) * 100) + '%' : '0%';
+        }
+
+        function saveConfig() {
+            appData.settings.truckMpg = parseFloat(document.getElementById('truckMpg').value);
+            appData.settings.operatingCost = parseFloat(document.getElementById('operatingCost').value);
+            appData.settings.driverPay = parseFloat(document.getElementById('driverPay').value);
+            appData.settings.homeBase = document.getElementById('homeBase').value;
+            alert('Settings saved successfully!');
+        }
+
+        console.log('TrustedRoutes loaded successfully');
+    </script>
+</body>
+</html>
